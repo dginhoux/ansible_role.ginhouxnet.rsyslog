@@ -1,0 +1,105 @@
+---
+
+- name: install and configure rsyslog packages
+  package:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ rsyslog_packages | flatten }}"
+
+
+# - name: fix logs dirs permissions
+#   file:
+#     path: "{{ item }}"
+#     owner: "{{ rsyslog_fix_permissions_logs_dir_user }}"
+#     group: "{{ rsyslog_fix_permissions_logs_dir_group }}"
+#     mode: "{{ rsyslog_fix_permissions_logs_dir_mode }}"
+#   loop: "{{ rsyslog_fix_permissions_logs_dirs | flatten }}"
+
+
+- name: remove rsyslog configuration dir
+  file:
+    state: absent
+    path: "{{ rsyslog_custom_conf_dir }}"
+
+
+- name: create rsyslog configuration dir 
+  file:
+    state: directory
+    path: "{{ rsyslog_custom_conf_dir }}"
+    mode: 755
+    owner: root
+    group: root
+
+
+- name: create rsyslog work dir 
+  file:
+    state: directory
+    path: "{{ rsyslog_work_dir }}"
+    mode: 700
+    owner: root
+    group: root
+
+
+# - name: generate custom configuration files
+#   template:
+#     src: custom.conf.j2
+#     dest: "{{ rsyslog_custom_conf_dir }}/{{ item.name }}.conf"
+#     # validate: "{{ 'rsyslogd -N1 -f %s' if item.value.validate | default(true) else 'true %s' }}"
+#     owner: root
+#     group: root
+#     mode: 0440
+#   loop: "{{ rsyslog_custom_rules_list | flatten }}"
+#   when: rsyslog_custom_rules_configure is true
+#   # notify: restart_rsyslog
+
+
+- name: generate custom configuration files
+  template:
+    src: custom.conf.j2
+    dest: "{{ rsyslog_custom_conf_dir }}/{{ custom.name }}.conf"
+    # validate: "{{ 'rsyslogd -N1 -f %s' if item.value.validate | default(true) else 'true %s' }}"
+    owner: root
+    group: root
+    mode: 0440
+  loop: "{{ rsyslog_custom_list | flatten }}"
+  loop_control:
+    loop_var: custom
+  when: rsyslog_custom_configure is true
+  # notify: restart_rsyslog
+
+
+- name: generate global configuration file
+  template:
+    src: rsyslog.conf.j2
+    dest: "{{ rsyslog_main_conf_file }}"
+    # validate: "rsyslogd -N1 -f {{ rsyslog_main_conf_file }}"
+    owner: root
+    group: root
+    mode: 0440
+  # notify: restart_rsyslog
+
+
+- name: validate configuration
+  shell:
+    cmd: "rsyslogd -N1 -f {{ rsyslog_main_conf_file }}"
+  notify: restart_rsyslog
+
+
+- name: disable and stop rsyslog services
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+    daemon_reload: yes
+  loop: "{{ rsyslog_services | flatten }}"
+  when: rsyslog_enable is false
+
+
+- name: enable and start rsyslog services
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  loop: "{{ rsyslog_services | flatten }}"
+  when: rsyslog_enable is true

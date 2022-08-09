@@ -1,0 +1,41 @@
+# {{ ansible_managed }}
+
+{% if custom.module is defined and custom.module | length > 0 %}
+{% for module in custom.module %}
+## {{ module.name }}
+# module configuration
+  module (
+    load="{{ module.name }}"
+{% if module.conf is defined and module.conf | length > 0 %}
+{% for key, value in module.conf.items() %}
+    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}
+{% endif %}
+  )
+{% endfor %}
+{% endif %}
+
+{% if custom.rule is defined and custom.rule | length > 0 %}
+{% for rule in custom.rule %}
+# {{ rule.mode }} configuration
+{% if rule.pre_line is defined and rule.pre_line | length > 0 %}
+{{ rule.pre_line }}
+{% endif %}
+  {{ rule.filter }} {{ rule.mode }} (
+    type="{{ rule.type }}"
+{% if rule.options is defined and rule.options | length > 0 %}
+{% for key, value in rule.options.items() %}
+    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}
+{% endif %}
+  )
+{% if rule.post_line is defined and rule.post_line | length > 0 %}
+{{ rule.post_line }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if custom.definition is defined and custom.definition | length > 0 %}
+# custom configuration
+{{ custom.definition }}
+{% endif %}

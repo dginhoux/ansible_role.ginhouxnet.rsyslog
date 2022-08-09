@@ -1,0 +1,207 @@
+# {{ ansible_managed }}
+
+
+###########################
+#### GLOBAL DIRECTIVES ####
+###########################
+global (
+{% for key, value in rsyslog_global_conf.items() %}
+  {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}
+)
+
+
+#######################
+#### INPUT MODULES ####
+#######################
+## imuxsock: Unix Socket Input Module
+# module configuration
+{{ '' if 'imuxsock' in rsyslog_modules_list else '#' }}  module (
+{{ '' if 'imuxsock' in rsyslog_modules_list else '#' }}    load="imuxsock"
+{% if rsyslog_module_imuxsock_conf is defined and rsyslog_module_imuxsock_conf | length > 0 %}{% for key, value in rsyslog_module_imuxsock_conf.items() %}
+{{ '' if 'imuxsock' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'imuxsock' in rsyslog_modules_list else '#' }}  )
+{% if rsyslog_module_imuxsock_input is defined and rsyslog_module_imuxsock_input | length > 0 %}{% for input in rsyslog_module_imuxsock_input %}
+# input configuration
+{{ '' if 'imuxsock' in rsyslog_modules_list else '#' }}  input (
+{{ '' if 'imuxsock' in rsyslog_modules_list else '#' }}    type="imudp"
+{% if input is defined and input | length > 0 %}{% for key, value in input.items() %}
+{{ '' if 'imuxsock' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'imuxsock' in rsyslog_modules_list else '#' }}  )
+{% endfor %}{% endif %}
+
+## imjournal: Systemd Journal Input Module
+# module configuration
+{{ '' if 'imjournal' in rsyslog_modules_list else '#' }}  module (
+{{ '' if 'imjournal' in rsyslog_modules_list else '#' }}    load="imjournal"
+{% if rsyslog_module_imjournal_conf is defined and rsyslog_module_imjournal_conf | length > 0 %}{% for key, value in rsyslog_module_imjournal_conf.items() %}
+{{ '' if 'imjournal' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'imjournal' in rsyslog_modules_list else '#' }}  )
+
+
+## imklog: Kernel Log Input Module
+# module configuration
+{{ '' if 'imklog' in rsyslog_modules_list else '#' }}  module (
+{{ '' if 'imklog' in rsyslog_modules_list else '#' }}    load="imklog"
+{% if rsyslog_module_imklog_conf is defined and rsyslog_module_imklog_conf | length > 0 %}{% for key, value in rsyslog_module_imklog_conf.items() %}
+{{ '' if 'imklog' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'imklog' in rsyslog_modules_list else '#' }}  )
+
+
+## immark: Mark Message Input Module
+# module configuration
+{{ '' if 'immark' in rsyslog_modules_list else '#' }}  module (
+{{ '' if 'immark' in rsyslog_modules_list else '#' }}    load="immark"
+{% if rsyslog_module_immark_conf is defined and rsyslog_module_immark_conf | length > 0 %}{% for key, value in rsyslog_module_immark_conf.items() %}
+{{ '' if 'immark' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'immark' in rsyslog_modules_list else '#' }}  )
+
+
+## imtcp: UDP Syslog Input Module
+# module configuration
+{{ '' if 'imudp' in rsyslog_modules_list else '#' }}  module (
+{{ '' if 'imudp' in rsyslog_modules_list else '#' }}    load="imudp"
+{% if rsyslog_module_imudp_conf is defined and rsyslog_module_imudp_conf | length > 0 %}{% for key, value in rsyslog_module_imudp_conf.items() %}
+{{ '' if 'imudp' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'imudp' in rsyslog_modules_list else '#' }}  )
+{% if rsyslog_module_imudp_input is defined and rsyslog_module_imudp_input | length > 0 %}{% for input in rsyslog_module_imudp_input %}
+# input configuration
+{{ '' if 'imudp' in rsyslog_modules_list else '#' }} input (
+{{ '' if 'imudp' in rsyslog_modules_list else '#' }}    type="imudp"
+{% if input is defined and input | length > 0 %}{% for key, value in input.items() %}
+{{ '' if 'imudp' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'imudp' in rsyslog_modules_list else '#' }}  )
+{% endfor %}{% endif %}
+
+
+## imtcp: TCP Syslog Input Module
+# module configuration
+{{ '' if 'imtcp' in rsyslog_modules_list else '#' }}  module (
+{{ '' if 'imtcp' in rsyslog_modules_list else '#' }}    load="imtcp"
+{% if rsyslog_module_imtcp_conf is defined and rsyslog_module_imtcp_conf | length > 0 %}{% for key, value in rsyslog_module_imtcp_conf.items() %}
+{{ '' if 'imtcp' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'imtcp' in rsyslog_modules_list else '#' }}  )
+{% if rsyslog_module_imtcp_input is defined and rsyslog_module_imtcp_input | length > 0 %}{% for input in rsyslog_module_imtcp_input %}
+# input configuration
+{{ '' if 'imtcp' in rsyslog_modules_list else '#' }}  input (
+{{ '' if 'imtcp' in rsyslog_modules_list else '#' }}    type="imtcp"
+{% if input is defined and input | length > 0 %}{% for key, value in input.items() %}
+{{ '' if 'imtcp' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'imtcp' in rsyslog_modules_list else '#' }}  )
+{% endfor %}{% endif %}
+
+
+## imfile: Text File Input Module
+# module configuration
+{{ '' if 'imfile' in rsyslog_modules_list else '#' }}  module (
+{{ '' if 'imfile' in rsyslog_modules_list else '#' }}    load="imfile"
+{% if rsyslog_module_imfile_conf is defined and rsyslog_module_imfile_conf | length > 0 %}{% for key, value in rsyslog_module_imfile_conf.items() %}
+{{ '' if 'imfile' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'imfile' in rsyslog_modules_list else '#' }}  )
+{% if rsyslog_module_imfile_input is defined and rsyslog_module_imfile_input | length > 0 %}{% for input in rsyslog_module_imfile_input %}
+# input configuration
+{{ '' if 'imfile' in rsyslog_modules_list else '#' }}  input (
+{{ '' if 'imfile' in rsyslog_modules_list else '#' }}    type="imfile"
+{% if input is defined and input | length > 0 %}{% for key, value in input.items() %}
+{{ '' if 'imfile' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'imfile' in rsyslog_modules_list else '#' }}  )
+{% endfor %}{% endif %}
+
+
+########################
+#### OUTPUT MODULES ####
+########################
+## omfile: File Output Module
+# module configuration
+{{ '' if 'omfile' in rsyslog_modules_list else '#' }}  module (
+{{ '' if 'omfile' in rsyslog_modules_list else '#' }}    load="builtin:omfile"
+{% if rsyslog_module_omfile_conf is defined and rsyslog_module_omfile_conf | length > 0 %}{% for key, value in rsyslog_module_omfile_conf.items() %}
+{{ '' if 'omfile' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'omfile' in rsyslog_modules_list else '#' }}  )
+{% if rsyslog_module_omfile_action is defined and rsyslog_module_omfile_action | length > 0 %}{% for action in rsyslog_module_omfile_action %}
+# action configuration
+{% if action.pre_line is defined and action.pre_line | length > 0 %}
+{{ '' if 'omfile' in rsyslog_modules_list else '#' }}{{ action.pre_line }}
+{% endif %}
+{{ '' if 'omfile' in rsyslog_modules_list else '#' }}  {{ action.filter }}  action (
+{{ '' if 'omfile' in rsyslog_modules_list else '#' }}    type="omfile"
+{% if action.options is defined and action.options | length > 0 %}{% for key, value in action.options.items() %}
+{{ '' if 'omfile' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'omfile' in rsyslog_modules_list else '#' }}  )
+{% if action.post_line is defined and action.post_line | length > 0 %}
+{{ '' if 'omfile' in rsyslog_modules_list else '#' }}{{ action.post_line }}
+{% endif %}
+{% endfor %}{% endif %}
+
+
+## omfwd: syslog Forwarding Output Module
+# module configuration
+{{ '' if 'omfwd' in rsyslog_modules_list else '#' }}  module (
+{{ '' if 'omfwd' in rsyslog_modules_list else '#' }}    load="builtin:omfwd"
+{% if rsyslog_module_omfwd_conf is defined and rsyslog_module_omfwd_conf | length > 0 %}{% for key, value in rsyslog_module_omfwd_conf.items() %}
+{{ '' if 'omfwd' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'omfwd' in rsyslog_modules_list else '#' }}  )
+{% if rsyslog_module_omfwd_action is defined and rsyslog_module_omfwd_action | length > 0 %}{% for action in rsyslog_module_omfwd_action %}
+# action configuration
+{% if action.pre_line is defined and action.pre_line | length > 0 %}
+{{ '' if 'omfwd' in rsyslog_modules_list else '#' }}{{ action.pre_line }}
+{% endif %}
+{{ '' if 'omfwd' in rsyslog_modules_list else '#' }}  {{ action.filter }}  action (
+{{ '' if 'omfwd' in rsyslog_modules_list else '#' }}    type="omfwd"
+{% if action.options is defined and action.options | length > 0 %}{% for key, value in action.options.items() %}
+{{ '' if 'omfwd' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'omfwd' in rsyslog_modules_list else '#' }}  )
+{% if action.post_line is defined and action.post_line | length > 0 %}
+{{ '' if 'omfwd' in rsyslog_modules_list else '#' }}{{ action.post_line }}
+{% endif %}
+{% endfor %}{% endif %}
+
+
+## omusrmsg: notify users
+# module configuration
+{{ '' if 'omusrmsg' in rsyslog_modules_list else '#' }}  module (
+{{ '' if 'omusrmsg' in rsyslog_modules_list else '#' }}    load="builtin:omusrmsg"
+{% if rsyslog_module_omusrmsg_conf is defined and rsyslog_module_omusrmsg_conf | length > 0 %}{% for key, value in rsyslog_module_omusrmsg_conf.items() %}
+{{ '' if 'omusrmsg' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'omusrmsg' in rsyslog_modules_list else '#' }}  )
+{% if rsyslog_module_omusrmsg_action is defined and rsyslog_module_omusrmsg_action | length > 0 %}{% for action in rsyslog_module_omusrmsg_action %}
+# action configuration
+{% if action.pre_line is defined and action.pre_line | length > 0 %}
+{{ '' if 'omusrmsg' in rsyslog_modules_list else '#' }}{{ action.pre_line }}
+{% endif %}
+{{ '' if 'omusrmsg' in rsyslog_modules_list else '#' }}  {{ action.filter }}  action (
+{{ '' if 'omusrmsg' in rsyslog_modules_list else '#' }}    type="omusrmsg"
+{% if action.options is defined and action.options | length > 0 %}{% for key, value in action.options.items() %}
+{{ '' if 'omusrmsg' in rsyslog_modules_list else '#' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}{% endif %}
+{{ '' if 'omusrmsg' in rsyslog_modules_list else '#' }}  )
+{% if action.post_line is defined and action.post_line | length > 0 %}
+{{ '' if 'omusrmsg' in rsyslog_modules_list else '#' }}{{ action.post_line }}
+{% endif %}
+{% endfor %}{% endif %}
+
+
+##################
+#### INCLUDES ####
+##################
+# Include all config files in {{ rsyslog_custom_conf_dir }}
+include  (
+  file="{{ rsyslog_include_conf_files_dir }}"
+  mode="optional"
+)

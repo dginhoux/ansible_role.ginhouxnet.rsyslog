@@ -1,0 +1,10 @@
+---
+- name: restart rsyslog
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  loop: "{{ rsyslog_services | flatten }}"
+  when: rsyslog_enable is true
+  listen: restart_rsyslog
