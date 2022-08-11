@@ -1,0 +1,80 @@
+# {{ ansible_managed }}
+
+## file: {{ file.name }}
+## file description: {{ file.description | default("") }}
+
+
+{% if file.filters is defined and file.filters | length > 0 %}
+{% for f in file.filters %}
+
+## filter description: {{ f.description | default("") }}
+{# create ruleset if type is ruleset #}
+{% if f.type is defined and f.type == "ruleset" and f.ruleset.name is defined and f.ruleset.rules is defined and f.ruleset.rules | length > 0 %}
+# ruleset:
+ruleset ( name="{{ f.ruleset.name }}" ) {
+{% for rule in f.ruleset.rules %}
+{% if rule.condition is defined and rule.condition | length > 0 %}
+  if ( {{ rule.condition }} ) then {
+{% endif %}
+{# for rule of type action #}{% if rule.type == "action" and rule.actions is defined and rule.actions | length > 0 %}
+{% for action in rule.actions %}
+{{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  action (
+{{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}    type="{{ action.module }}"
+{% for key, value in action.options.items() %}
+{{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}
+{{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  )
+{{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}{{ '  stop' if action.stop_after is defined and action.stop_after }}
+{% endfor %}
+{% endif %}
+{# for rule of type stop #}{% if rule.type == "stop" %}
+{{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  stop
+{% endif %}
+{# for rule of type call #}{% if rule.type == "call" %}
+{{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  call {{ rule.call }}
+{% endif %}
+{#  #}
+{% if rule.condition is defined and rule.condition | length > 0 %}
+  }
+{% endif %}
+{{ '  stop' if rule.type != "stop" and rule.stop_after is defined and rule.stop_after }}
+{% endfor %}
+}
+{% endif %}
+{# create filter and action #}
+# filter & action:
+{% if f.condition is defined and f.condition  | length > 0 %}
+if ( {{ f.condition }} ) then {
+{% endif %}
+{# for type call #}
+{% if f.type is defined and f.type == "call" and f.call is defined and f.call != "" %}
+{{ '  ' if f.condition is defined and f.condition | length > 0 else '' }}call {{ f.call }}
+{% endif %}
+{# for type ruleset #}
+{% if f.type is defined and f.type == "ruleset" and f.ruleset.name is defined and f.ruleset.rules is defined and f.ruleset.rules | length > 0  %}
+{{ '  ' if f.condition is defined and f.condition | length > 0 else '' }}call {{ f.ruleset.name }}
+{{ '  ' if f.condition is defined and f.condition | length > 0 else '' }}stop
+{% endif %}
+{# for type stop #}
+{% if f.type is defined and f.type == "stop" %}
+{{ '  ' if f.condition is defined and f.condition | length > 0 else '' }}stop
+{% endif %}
+{# for type action #}
+{% if f.type is defined and f.type == "action" %}
+{% for action in f.actions %}
+  action (
+    type="{{ action.module }}"
+{% for key, value in action.options.items() %}
+    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}
+  )
+{{ '  stop' if action.stop_after is defined and action.stop_after }}
+{% endfor %}
+{% endif %}
+{#  #}
+{% if f.condition is defined and f.condition  | length > 0 %}
+}
+{% endif %}
+
+{% endfor %}
+{% endif %}

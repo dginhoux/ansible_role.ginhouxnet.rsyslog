@@ -53,18 +53,18 @@
 #   # notify: restart_rsyslog
 
 
-- name: generate custom configuration files
+- name: generate filters configuration files
   template:
-    src: custom.conf.j2
-    dest: "{{ rsyslog_custom_conf_dir }}/{{ custom.name }}.conf"
+    src: file.conf.j2
+    dest: "{{ rsyslog_custom_conf_dir }}/{{ file.name }}.conf"
     # validate: "{{ 'rsyslogd -N1 -f %s' if item.value.validate | default(true) else 'true %s' }}"
     owner: root
     group: root
     mode: 0440
-  loop: "{{ rsyslog_custom_list | flatten }}"
+  loop: "{{ rsyslog_filters_files | flatten }}"
   loop_control:
-    loop_var: custom
-  when: rsyslog_custom_configure is true
+    loop_var: file
+  # when: rsyslog_filters_files_configure is true
   # notify: restart_rsyslog
 
 
