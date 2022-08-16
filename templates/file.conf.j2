@@ -4,45 +4,122 @@
 ## file description: {{ file.description | default("") }}
 
 
-{% if file.filters is defined and file.filters | length > 0 %}
-{% for f in file.filters %}
 
-## filter description: {{ f.description | default("") }}
+
+{% if file.filters_list is defined and file.filters_list | length > 0 %}
+{% for f in file.filters_list %}
+{% if f.templates_list is defined and f.templates_list | length > 0 %}
+###################
+#### TEMPLATES ####
+###################
+{% for template in f.templates_list %}
+# template description: {{ template.description | default("") }}
+template (
+  name="{{ template.name }}"
+{# list #}{% if template.type == "list" %}
+  type="list"
+{% endif %}{# #}
+{# list #}{% if template.type == "subtree" %}
+  type="subtree"
+  subtree="{{ template.subtree }}"
+{% endif %}{# #}
+{# list #}{% if template.type == "string" %}
+  type="string"
+  string="{{ template.string }}"
+{% endif %}{# #}
+{# list #}{% if template.type == "plugin" %}
+  type="plugin"
+  plugin="{{ template.plugin }}"
+{% endif %}{# #}
+{% if template.options is defined and template.options | length > 0 %}
+{% for key, value in module.options.items() %}
+  {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
+{% endfor %}
+{% endif %}
+{% if template.type == "list"  and template.list is defined and template.list | length > 0 %}
+) {
+{% for l in template.list %}
+{% for key, value in l.items() %}
+  {{ key }}{{ ' (' if value else '' }}
+{% for k, v in value.items() %}
+    {{ k }}{{ '="' if v else '' }}{{ v }}{{ '"' if v else '' }}
+{% endfor %}
+{{ '  )' if value else '' }}
+{% endfor %}
+{% endfor %}
+}
+{% else %}
+)
+{% endif %}
+
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+
+
+
+{% if file.filters_list is defined and file.filters_list | length > 0 %}
+{% for f in file.filters_list %}
+
 {# create ruleset if type is ruleset #}
-{% if f.type is defined and f.type == "ruleset" and f.ruleset.name is defined and f.ruleset.rules is defined and f.ruleset.rules | length > 0 %}
-# ruleset:
-ruleset ( name="{{ f.ruleset.name }}" ) {
-{% for rule in f.ruleset.rules %}
+{% if f.type is defined and f.type == "ruleset" and f.ruleset_definition.name is defined and f.ruleset_definition.rules is defined and f.ruleset_definition.rules | length > 0 %}
+#################
+#### RULESET ####
+#################
+# ruleset description: {{ f.ruleset_definition.description | default("") }}
+ruleset ( name="{{ f.ruleset_definition.name }}" ) {
+{% for rule in f.ruleset_definition.rules %}
+  # rule description: {{ rule.description | default("") }}
 {% if rule.condition is defined and rule.condition | length > 0 %}
   if ( {{ rule.condition }} ) then {
 {% endif %}
-{# for rule of type action #}{% if rule.type == "action" and rule.actions is defined and rule.actions | length > 0 %}
-{% for action in rule.actions %}
+{# for rule of type action #}{% if rule.type == "action" and rule.actions_list is defined and rule.actions_list | length > 0 %}
+{% for action in rule.actions_list %}
+{{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  # action description: {{ action.description | default("") }}
 {{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  action (
 {{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}    type="{{ action.module }}"
 {% for key, value in action.options.items() %}
 {{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
 {% endfor %}
 {{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  )
-{{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}{{ '  stop' if action.stop_after is defined and action.stop_after }}
-{% endfor %}
-{% endif %}
-{# for rule of type stop #}{% if rule.type == "stop" %}
+{% if action.stop_after is defined and action.stop_after %}
 {{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  stop
 {% endif %}
-{# for rule of type call #}{% if rule.type == "call" %}
-{{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  call {{ rule.call }}
+{% endfor %}
 {% endif %}
-{#  #}
+{# for rule of type stop #}
+{% if rule.type == "stop" %}
+{{ '  ' if rule.condition is defined and rule.condition | length > 0 }}  stop
+{% endif %}
+{# for rule of type call #}
+{% if rule.type == "call" %}
+{{ '  ' if rule.condition is defined and rule.condition | length > 0 }}  call {{ rule.call }}
+{% endif %}
 {% if rule.condition is defined and rule.condition | length > 0 %}
   }
 {% endif %}
-{{ '  stop' if rule.type != "stop" and rule.stop_after is defined and rule.stop_after }}
+{% if rule.type != "stop" and rule.stop_after is defined and rule.stop_after %}
+  stop
+{% endif %}
 {% endfor %}
 }
+
 {% endif %}
-{# create filter and action #}
-# filter & action:
+{% endfor %}
+{% endif %}
+
+
+
+
+{% if file.filters_list is defined and file.filters_list | length > 0 %}
+#################
+#### FILTERS ####
+#################
+{% for f in file.filters_list %}
+# filter description: {{ f.description | default("") }}
+{# create filter #}
 {% if f.condition is defined and f.condition  | length > 0 %}
 if ( {{ f.condition }} ) then {
 {% endif %}
@@ -51,8 +128,8 @@ if ( {{ f.condition }} ) then {
 {{ '  ' if f.condition is defined and f.condition | length > 0 else '' }}call {{ f.call }}
 {% endif %}
 {# for type ruleset #}
-{% if f.type is defined and f.type == "ruleset" and f.ruleset.name is defined and f.ruleset.rules is defined and f.ruleset.rules | length > 0  %}
-{{ '  ' if f.condition is defined and f.condition | length > 0 else '' }}call {{ f.ruleset.name }}
+{% if f.type is defined and f.type == "ruleset" and f.ruleset_definition.name is defined and f.ruleset_definition.rules is defined and f.ruleset_definition.rules | length > 0  %}
+{{ '  ' if f.condition is defined and f.condition | length > 0 else '' }}call {{ f.ruleset_definition.name }}
 {{ '  ' if f.condition is defined and f.condition | length > 0 else '' }}stop
 {% endif %}
 {# for type stop #}
@@ -61,7 +138,8 @@ if ( {{ f.condition }} ) then {
 {% endif %}
 {# for type action #}
 {% if f.type is defined and f.type == "action" %}
-{% for action in f.actions %}
+{% for action in f.actions_list %}
+  # action description: {{ action.description | default("") }}
   action (
     type="{{ action.module }}"
 {% for key, value in action.options.items() %}

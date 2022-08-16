@@ -13,7 +13,7 @@ rsyslog_custom_conf_dir: /etc/rsyslog.d
 rsyslog_include_conf_files_dir: /etc/rsyslog.d/*.conf
 
 
-rsyslog_global_conf: 
+rsyslog_global_configs: 
   umask: "0022"
   workDirectory: "{{ rsyslog_work_dir }}"
   net.enableDNS: "on"
@@ -21,65 +21,89 @@ rsyslog_global_conf:
   processInternalMessages: "off"
 
 
-rsyslog_global_include:
+rsyslog_global_includes:
   - file: /etc/rsyslog.d/*.conf
+    description: "include *.conf in default dropin folder /etc/rsyslog.d"
     optionnal: true
   # - file: /etc/rsyslog_test.conf
+  #   description: "test file not optionnal example"
   #   optionnal: false
 
 
-rsyslog_global_module:
+rsyslog_global_modules:
   - name: imuxsock
+    description: "load and configure unix socket input module"
     load_name: ""
     options:
       SysSock.Use: "on"
   - name: imjournal
+    description: "load and configure systemd journal input module"
     load_name: ""
     options:
       StateFile: imjournal.state
       IgnoreNonValidStatefile: "on"
   - name: imklog
+    description: "load and configure kernel log input module"
     load_name: ""
     options: []
   - name: immark
+    description: "load and configure mark message input module"
     load_name: ""
     options: []
   # - name: imfile
+  #   description: "load and configure text file input module"
   #   load_name: ""
   #   options: []
   - name: imtcp
+    description: "load and configure tcp syslog input module"
     load_name: ""
     options: []
   - name: imudp
+    description: "load and configure udp syslog input module"
     load_name: ""
     options: []
   - name: omfile
+    description: "load and configure file output module"
     load_name: "builtin:omfile"
-    options: []
+    options:
+      Template: RSYSLOG_TraditionalFileFormat
+      fileOwner: root
+      fileGroup: adm
+      FileCreateMode: "0640"
+      dirOwner: root
+      dirGroup: adm
+      DirCreateMode: "0755"
   - name: omfwd
+    description: "load and configure syslog forwarding output module"
     load_name: "builtin:omfwd"
     options: []
   - name: omusrmsg
+    description: "load and configure notify users output module"
     load_name: "builtin:omusrmsg"
     options: []
 
 
-rsyslog_global_listener:
+rsyslog_global_listeners:
   # - name: file_imput
+  #   description: "read file xxx"
   #   type: imfile
-  #   options: []
+  #   options:
+  #     file: /tmp/xxx
   - name: udp_514
+    description: "syslog udp listener port 514"
     type: imudp
     options:
       port: 514
   - name: tcp_514
+    description: "syslog tcp listener port 514"
     type: imtcp
     options:
       port: 514
 
 
-rsyslog_global_template:
-  - name: tpl_list
+rsyslog_global_templates:
+  - name: tpl_global_list
+    description: "global template type list example"
     type: list
     options: []
     list:
@@ -93,89 +117,110 @@ rsyslog_global_template:
           name: "timereported"
           dateFormat: "rfc3339"
           caseConversion: "lower"
-
-  - name: tpl_subtree
+  - name: tpl_global_subtree
+    description: "global template type subtree example"
     type: subtree
     options: []
     subtree: "$!usr!tpl2"
-
-  - name: tpl_string
+  - name: tpl_global_string
+    description: "global template type string example"
     type: string
     options: []
     string: "teststring"
-
-  # - name: tpl_plugin
+  # - name: tpl_global_plugin
+  #   description: "global template type plugin example (disabled to avoid errors)"
   #   type: plugin
   #   options: []
   #   plugin: "testplugin"
 
 
 
-rsyslog_global_ruleset:
+rsyslog_global_rulesets:
   - name: toto
+    description: "global ruleset toto example"
     rules:
-      - condition: "$msg contains 'toto'"
+      - description: "for msg with toto inside"
+        condition: "$msg contains 'toto'"
+        stop_after: false
         type: action
         # type: stop
         # type: call
         # call: 
-        actions:
-        - module: omfile
-          options: 
-            File: /var/log/toto
-          stop_after: false
-        - module: omfwd
-          options:
-            protocol: udp
-            target: toto.infra.ginhoux.net
-            port: 514
-          stop_after: false
+        actions_list:
+          - description: ""
+            stop_after: true
+            module: omfile
+            options: 
+              File: /var/log/toto
+          - description: ""
+            stop_after: false
+            module: omfwd
+            options:
+              protocol: udp
+              target: toto.infra.ginhoux.net
+              port: 514
+      - description: ""
+        condition: ""
         stop_after: false
-      - condition: ""
         # type: action
         # type: call
         type: stop
+        # call: ""
         # module: 
         # options: []
-        # stop_after: false
+      - description: ""
+        condition: "$msg contains 'titi'"
+        stop_after: false
+        # type: action
+        type: call
+        # type: stop
+        call: titi
+        # module: 
+        # options: []
 
   - name: titi
+    description: "global ruleset titi example"
     rules:
-      - condition: "$syslogfacility-text == 'daemon' and $msg contains 'titi'"
+      - description: ""
+        condition: "$syslogfacility-text == 'daemon' and $msg contains 'titi'"
+        stop_after: false
         type: action
         # type: stop
         # type: call
         # call: 
-        actions:
-        - module: omfile
+        actions_list:
+        - description: ""
+          stop_after: false
+          module: omfile
           options: 
             File: /var/log/titi
-          stop_after: false
-        stop_after: false
         
-      - condition: "$syslogseverity-text == 'warn'"
+      - description: ""
+        condition: "$syslogseverity-text == 'warn'"
+        stop_after: false
         type: action
         # type: stop
         # type: call
         # call: 
-        actions:
-        - module: omfile
-          options: 
-            File: /var/log/titi_warn
-          stop_after: false
-        - module: omfwd
-          options:
-            protocol: udp
-            target: titi.infra.ginhoux.net
-            port: 514
-          stop_after: false
-        stop_after: false
+        actions_list:
+          - description: ""
+            stop_after: false
+            module: omfile
+            options: 
+              File: /var/log/titi_warn
+          - description: ""
+            stop_after: false
+            module: omfwd
+            options:
+              protocol: udp
+              target: titi.infra.ginhoux.net
+              port: 514
 
 
 rsyslog_filters_files:
   - name: 00_iptables
     description: "manage iptables logs"
-    filters:
+    filters_list:
       - description: "only iptables drop msg, all in file and only severity 4 forwarded"
         condition: >-
                   $syslogfacility-text == 'kern'
@@ -183,81 +228,104 @@ rsyslog_filters_files:
                   $msg contains 'iptables'
                   and
                   $msg contains 'drop'
-        type: action
-        # type: ruleset
+        # type: action
+        type: ruleset
         # type: call
         # type: stop
         # call: toto
-        ruleset:
+        ruleset_definition:
           name: iptables_drop
+          description: "ruleset for handle iptables logs"
           rules:
-            - condition: ""
+            - description: ""
+              condition: ""
+              stop_after: false
               type: action
               # type: stop
               # type: call
               # call: 
-              actions:
-              - module: omfile
-                options: 
-                  File: /var/log/iptables_drop
-                stop_after: false
-              - module: omfile
-                options: 
-                  File: /var/log/iptables_drop2
-                stop_after: false
+              actions_list:
+                - description: ""
+                  stop_after: false
+                  module: omfile
+                  options: 
+                    File: /var/log/iptables_drop
+                # - module: omfile
+                #   options: 
+                #     File: /var/log/iptables_drop2
+                #   stop_after: false
+            - description: ""
+              condition: ""
               stop_after: false
-
-            - condition: ""
               # type: action
               # type: call
               type: stop
               # module: 
               # options: []
-              # stop_after: false
-
-            - condition: ""
-              type: call
-              call: titi
-              # module: 
-              # options: []
-              stop_after: false
-
-            - condition: >-
+            - description: ""
+              condition: >-
                          $syslogseverity-text == 'warn'
+              stop_after: false
               type: action
               # type: stop
               # type: call
               # call: 
-              actions:
-                - module: omfwd
+              actions_list:
+                - description: ""
+                  stop_after: false
+                  module: omfwd
                   options:
                     protocol: udp
                     target: rsyslog1.infra.ginhoux.net
                     port: 514
+                - description: ""
+                  module: omfwd
                   stop_after: false
-                - module: omfwd
                   options:
                     protocol: udp
                     target: rsyslog2.infra.ginhoux.net
                     port: 514
-                  stop_after: false
-              stop_after: false
-
-        actions:
-          - module: omfwd
-            options:
-              protocol: tcp
-              target: rsyslog33.infra.ginhoux.net
-              port: 5555
+        actions_list:
+          - description: ""
             stop_after: false
-
-          - module: omfwd
+            module: omfile
+            options:
+              file: /tmp/aaa
+          - description: ""
+            stop_after: false
+            module: omfwd
             options:
               protocol: udp
               target: rsyslog44.infra.ginhoux.net
               port: 9999
-            stop_after: false
-
-
-
-
+        templates_list:
+          - name: tpl_list2
+            description: "template type list example"
+            type: list
+            options: []
+            list:
+              - constant: 
+                  value: "Syslog MSG is: '"
+              - property:
+                  name: "msg"
+              - constant: 
+                  value: "', "
+              - property:
+                  name: "timereported"
+                  dateFormat: "rfc3339"
+                  caseConversion: "lower"
+          - name: tpl_subtree2
+            description: "template type subtree example"
+            type: subtree
+            options: []
+            subtree: "$!usr!tpl2"
+          - name: tpl_string2
+            description: "template type string example"
+            type: string
+            options: []
+            string: "teststring"
+          # - name: tpl_plugin2
+          #   description: "template type plugin example (disabled to avoid errors)"
+          #   type: plugin
+          #   options: []
+          #   plugin: "testplugin"

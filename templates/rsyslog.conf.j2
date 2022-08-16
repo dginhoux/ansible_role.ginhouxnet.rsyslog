@@ -1,23 +1,28 @@
 # {{ ansible_managed }}
 
 
-{% if rsyslog_global_conf is defined and rsyslog_global_conf | length > 0 %}
-################
-#### CONFIG ####
-################
+
+
+{% if rsyslog_global_configs is defined and rsyslog_global_configs | length > 0 %}
+#######################
+#### GLOBAL CONFIG ####
+#######################
 global (
-{% for key, value in rsyslog_global_conf.items() %}
+{% for key, value in rsyslog_global_configs.items() %}
   {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
 {% endfor %}
 )
 {% endif %}
 
 
-{% if rsyslog_global_module is defined and rsyslog_global_module | length > 0 %}
-#################
-#### MODULES ####
-#################
-{% for module in rsyslog_global_module %}
+
+
+{% if rsyslog_global_modules is defined and rsyslog_global_modules | length > 0 %}
+########################
+#### GLOBAL MODULES ####
+########################
+{% for module in rsyslog_global_modules %}
+# module description: {{ module.description | default("") }}
 module (
   load="{{ module.load_name if module.load_name is defined and module.load_name != "" else module.name }}"
 {% if module.options is defined and module.options | length > 0 %}
@@ -32,11 +37,13 @@ module (
 
 
 
-{% if rsyslog_global_listener is defined and rsyslog_global_listener | length > 0 %}
-###################
-#### LISTENERS ####
-###################
-{% for listener in rsyslog_global_listener %}
+
+{% if rsyslog_global_listeners is defined and rsyslog_global_listeners | length > 0 %}
+##########################
+#### GLOBAL LISTENERS ####
+##########################
+{% for listener in rsyslog_global_listeners %}
+# listener description: {{ listener.description | default("") }}
 input (
   type="{{ listener.type }}"
 {% if listener.options is defined and listener.options | length > 0 %}
@@ -50,11 +57,14 @@ input (
 {% endif %}
 
 
-{% if rsyslog_global_template is defined and rsyslog_global_template | length > 0 %}
-###################
-#### TEMPLATES ####
-###################
-{% for template in rsyslog_global_template %}
+
+
+{% if rsyslog_global_templates is defined and rsyslog_global_templates | length > 0 %}
+##########################
+#### GLOBAL TEMPLATES ####
+##########################
+{% for template in rsyslog_global_templates %}
+# template description: {{ template.description | default("") }}
 template (
   name="{{ template.name }}"
 {# list #}{% if template.type == "list" %}
@@ -81,11 +91,11 @@ template (
 ) {
 {% for l in template.list %}
 {% for key, value in l.items() %}
-  {{ key }}{{ ' ( ' if value else '' }}
+  {{ key }}{{ ' (' if value else '' }}
 {% for k, v in value.items() %}
     {{ k }}{{ '="' if v else '' }}{{ v }}{{ '"' if v else '' }}
 {% endfor %}
-{{ ' )' if value else '' }}
+{{ '  )' if value else '' }}
 {% endfor %}
 {% endfor %}
 }
@@ -97,35 +107,48 @@ template (
 {% endif %}
 
 
-{% if rsyslog_global_ruleset is defined and rsyslog_global_ruleset | length > 0 %}
-##################
-#### RULESETS ####
-##################
-{% for ruleset in rsyslog_global_ruleset %}
+
+
+{% if rsyslog_global_rulesets is defined and rsyslog_global_rulesets | length > 0 %}
+#########################
+#### GLOBAL RULESETS ####
+#########################
+{% for ruleset in rsyslog_global_rulesets %}
+# ruleset description: {{ ruleset.description | default("") }}
 ruleset ( name="{{ ruleset.name }}" ) {
 {% for rule in ruleset.rules %}
+  # rule description: {{ rule.description | default("") }}
 {% if rule.condition is defined and rule.condition | length > 0 %}
   if ( {{ rule.condition }} ) then {
 {% endif %}
-{# for rule of type action #}{% if rule.type == "action" and rule.actions is defined and rule.actions | length > 0 %}
-{% for action in rule.actions %}
+{# for rule of type action #}
+{% if rule.type == "action" and rule.actions_list is defined and rule.actions_list | length > 0 %}
+{% for action in rule.actions_list %}
+{{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  # action description: {{ action.description | default("") }}
 {{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  action (
 {{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}    type="{{ action.module }}"
 {% for key, value in action.options.items() %}
 {{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}    {{ key }}{{ '="' if value else '' }}{{ value }}{{ '"' if value else '' }}
 {% endfor %}
 {{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  )
-{{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}{{ '  stop' if action.stop_after is defined and action.stop_after }}
-{% endfor %}
-{% endif %}{#  #}
-{# for rule of type stop #}{% if rule.type == "stop" %}
+{% if action.stop_after is defined and action.stop_after %}
 {{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  stop
-{% endif %}{#  #}
-{# for rule of type call #}{% if rule.type == "call" %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{# for rule of type stop #}
+{% if rule.type == "stop" %}
+{{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  stop
+{% endif %}
+{# for rule of type call #}
+{% if rule.type == "call" %}
 {{ '  ' if rule.condition is defined and rule.condition | length > 0 else '' }}  call {{ rule.call }}
-{% endif %}{#  #}
+{% endif %}
 {% if rule.condition is defined and rule.condition | length > 0 %}
   }
+{% endif %}
+{% if rule.type != "stop" and rule.stop_after is defined and rule.stop_after %}
+  stop
 {% endif %}
 {% endfor %}
 }
@@ -135,14 +158,19 @@ ruleset ( name="{{ ruleset.name }}" ) {
 
 
 
-{% if rsyslog_global_include is defined and rsyslog_global_include | length > 0 %}
-##################
-#### INCLUDES ####
-##################
-{% for include in rsyslog_global_include %}
+
+
+{% if rsyslog_global_includes is defined and rsyslog_global_includes | length > 0 %}
+#########################
+#### GLOBAL INCLUDES ####
+#########################
+{% for include in rsyslog_global_includes %}
+# include description: {{ include.description | default("") }}
 include  (
   file="{{ include.file }}"
-{% if include.optionnal %}  mode="optional"{% endif %}
+{% if include.optionnal %}
+  mode="optional"
+{% endif %}
 )
 
 {% endfor %}
