@@ -40,32 +40,16 @@
     group: root
 
 
-# - name: generate custom configuration files
-#   template:
-#     src: custom.conf.j2
-#     dest: "{{ rsyslog_custom_conf_dir }}/{{ item.name }}.conf"
-#     # validate: "{{ 'rsyslogd -N1 -f %s' if item.value.validate | default(true) else 'true %s' }}"
-#     owner: root
-#     group: root
-#     mode: 0440
-#   loop: "{{ rsyslog_custom_rules_list | flatten }}"
-#   when: rsyslog_custom_rules_configure is true
-#   # notify: restart_rsyslog
-
-
-- name: generate filters configuration files
+- name: generate custom configuration files
   template:
-    src: file.conf.j2
-    dest: "{{ rsyslog_custom_conf_dir }}/{{ ansible_loop.index }}_{{ file.name }}.conf"
+    src: custom.conf.j2
+    dest: "{{ rsyslog_custom_conf_dir }}/{{ item.name }}.conf"
     # validate: "{{ 'rsyslogd -N1 -f %s' if item.value.validate | default(true) else 'true %s' }}"
     owner: root
     group: root
     mode: 0440
-  loop: "{{ rsyslog_filters_files | flatten }}"
-  loop_control:
-    loop_var: file
-    extended: yes
-  # when: rsyslog_filters_files_configure is true
+  loop: "{{ rsyslog_custom_rules_list | flatten }}"
+  when: rsyslog_custom_rules_configure is true
   # notify: restart_rsyslog
 
 

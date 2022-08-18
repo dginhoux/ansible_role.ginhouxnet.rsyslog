@@ -4,7 +4,7 @@ rsyslog_packages:
   - rsyslog
 rsyslog_services:
   - rsyslog
-rsyslog_enable: false
+rsyslog_enable: true
 
 
 rsyslog_work_dir: /var/spool/rsyslog
@@ -13,7 +13,7 @@ rsyslog_custom_conf_dir: /etc/rsyslog.d
 rsyslog_include_conf_files_dir: /etc/rsyslog.d/*.conf
 
 
-rsyslog_global_configs: 
+rsyslog_global_conf: 
   umask: "0022"
   workDirectory: "{{ rsyslog_work_dir }}"
   net.enableDNS: "on"
@@ -21,311 +21,173 @@ rsyslog_global_configs:
   processInternalMessages: "off"
 
 
-rsyslog_global_includes:
-  - file: /etc/rsyslog.d/*.conf
-    description: "include *.conf in default dropin folder /etc/rsyslog.d"
-    optionnal: true
-  # - file: /etc/rsyslog_test.conf
-  #   description: "test file not optionnal example"
-  #   optionnal: false
+rsyslog_modules_list:
+  - imuxsock
+  - imjournal
+  - imklog
+  - immark
+  - imfile
+  # - imudp
+  # - imtcp
+  - omfile
+  - omfwd
+  - omusrmsg
 
 
-rsyslog_global_modules:
-  - name: imuxsock
-    description: "load and configure unix socket input module"
-    load_name: ""
+rsyslog_module_imuxsock_conf:
+  SysSock.Use: "on"
+rsyslog_module_imuxsock_input: []
+
+
+rsyslog_module_imjournal_conf:
+  StateFile: imjournal.state
+  IgnoreNonValidStatefile: "on"
+
+
+rsyslog_module_imklog_conf: []
+
+
+rsyslog_module_immark_conf: []
+
+
+rsyslog_module_imudp_conf: []
+rsyslog_module_imudp_input:
+  - port: 514
+
+
+rsyslog_module_imtcp_conf: []
+rsyslog_module_imtcp_input:
+  - port: 514
+
+
+rsyslog_module_imfile_conf: []
+rsyslog_module_imfile_input: []
+
+
+rsyslog_module_omfile_conf: 
+  Template: RSYSLOG_TraditionalFileFormat
+  fileOwner: root
+  fileGroup: adm
+  FileCreateMode: "0640"
+  dirOwner: root
+  dirGroup: adm
+  DirCreateMode: "0755"
+rsyslog_module_omfile_action:
+  # - filter: "*.info;mail.none;authpriv.none;cron.none"
+  - filter: "*.=info;*.=notice;*.=warn;auth,authpriv,cron,daemon,mail,uucp,news,lpr.none"
     options:
-      SysSock.Use: "on"
-  - name: imjournal
-    description: "load and configure systemd journal input module"
-    load_name: ""
+      File: /var/log/messages
+    pre_line: ""
+    post_line: ""
+  - filter: "auth,authpriv.*"
     options:
-      StateFile: imjournal.state
-      IgnoreNonValidStatefile: "on"
-  - name: imklog
-    description: "load and configure kernel log input module"
-    load_name: ""
-    options: []
-  - name: immark
-    description: "load and configure mark message input module"
-    load_name: ""
-    options: []
-  # - name: imfile
-  #   description: "load and configure text file input module"
-  #   load_name: ""
-  #   options: []
-  - name: imtcp
-    description: "load and configure tcp syslog input module"
-    load_name: ""
-    options: []
-  - name: imudp
-    description: "load and configure udp syslog input module"
-    load_name: ""
-    options: []
-  - name: omfile
-    description: "load and configure file output module"
-    load_name: "builtin:omfile"
+      File: /var/log/auth.log
+  - filter: "mail.*"
     options:
-      Template: RSYSLOG_TraditionalFileFormat
-      fileOwner: root
-      fileGroup: adm
-      FileCreateMode: "0640"
-      dirOwner: root
-      dirGroup: adm
-      DirCreateMode: "0755"
-  - name: omfwd
-    description: "load and configure syslog forwarding output module"
-    load_name: "builtin:omfwd"
-    options: []
-  - name: omusrmsg
-    description: "load and configure notify users output module"
-    load_name: "builtin:omusrmsg"
-    options: []
-
-
-rsyslog_global_listeners:
-  # - name: file_imput
-  #   description: "read file xxx"
-  #   type: imfile
+      File: /var/log/maillog
+  - filter: "cron.*"
+    options:
+      File: /var/log/cron.log
+  - filter: "daemon.*"
+    options:
+      File: /var/log/daemon.log
+  - filter: "uucp,news.crit"
+    options:
+      File: /var/log/spooler
+  - filter: "lpr.*"
+    options:
+      File: /var/log/lpr.log
+  # - filter: "*.=debug;auth,authpriv.none;mail.none"
   #   options:
-  #     file: /tmp/xxx
-  - name: udp_514
-    description: "syslog udp listener port 514"
-    type: imudp
+  #     File: /var/log/debug
+  - filter: "local7.*"
     options:
-      port: 514
-  - name: tcp_514
-    description: "syslog tcp listener port 514"
-    type: imtcp
+      File: /var/log/boot.log
+  - filter: "kern.*"
     options:
-      port: 514
+      File: /var/log/kern.log
+    pre_line: "if not ($msg contains 'iptables') then {"
+    post_line: "}"
+  - filter: "kern.info"
+    options:
+      File: /var/log/iptables.log
+    pre_line: "if ($msg contains 'iptables') then {"
+    post_line: "}"
 
 
-rsyslog_global_templates:
-  - name: tpl_global_list
-    description: "global template type list example"
-    type: list
-    options: []
-    list:
-      - constant: 
-          value: "Syslog MSG is: '"
-      - property:
-          name: "msg"
-      - constant: 
-          value: "', "
-      - property:
-          name: "timereported"
-          dateFormat: "rfc3339"
-          caseConversion: "lower"
-  - name: tpl_global_subtree
-    description: "global template type subtree example"
-    type: subtree
-    options: []
-    subtree: "$!usr!tpl2"
-  - name: tpl_global_string
-    description: "global template type string example"
-    type: string
-    options: []
-    string: "teststring"
-  # - name: tpl_global_plugin
-  #   description: "global template type plugin example (disabled to avoid errors)"
-  #   type: plugin
-  #   options: []
-  #   plugin: "testplugin"
+rsyslog_module_omusrmsg_conf: []
+rsyslog_module_omusrmsg_action:
+  - filter: "*.emerg"
+    options:
+      users: "*"
 
 
-
-rsyslog_global_rulesets:
-  - name: toto
-    description: "global ruleset toto example"
-    rules:
-      - description: "for msg with toto inside"
-        condition: "$msg contains 'toto'"
-        stop_after: false
-        type: action
-        # type: stop
-        # type: call
-        # call: 
-        actions_list:
-          - description: ""
-            stop_after: true
-            module: omfile
-            options: 
-              File: /var/log/toto
-          - description: ""
-            stop_after: false
-            module: omfwd
-            options:
-              protocol: udp
-              target: toto.infra.ginhoux.net
-              port: 514
-      - description: ""
-        condition: ""
-        stop_after: false
-        # type: action
-        # type: call
-        type: stop
-        # call: ""
-        # module: 
-        # options: []
-      - description: ""
-        condition: "$msg contains 'titi'"
-        stop_after: false
-        # type: action
-        type: call
-        # type: stop
-        call: titi
-        # module: 
-        # options: []
-
-  - name: titi
-    description: "global ruleset titi example"
-    rules:
-      - description: ""
-        condition: "$syslogfacility-text == 'daemon' and $msg contains 'titi'"
-        stop_after: false
-        type: action
-        # type: stop
-        # type: call
-        # call: 
-        actions_list:
-        - description: ""
-          stop_after: false
-          module: omfile
-          options: 
-            File: /var/log/titi
-        
-      - description: ""
-        condition: "$syslogseverity-text == 'warn'"
-        stop_after: false
-        type: action
-        # type: stop
-        # type: call
-        # call: 
-        actions_list:
-          - description: ""
-            stop_after: false
-            module: omfile
-            options: 
-              File: /var/log/titi_warn
-          - description: ""
-            stop_after: false
-            module: omfwd
-            options:
-              protocol: udp
-              target: titi.infra.ginhoux.net
-              port: 514
+rsyslog_module_omfwd_conf: 
+  Template: RSYSLOG_TraditionalFileFormat
+rsyslog_module_omfwd_action: []
+  # - filter: kern.warning
+  #   options:
+  #     protocol: udp
+  #     target: rsyslog.infra.ginhoux.net
+  #     port: 514
+  # - filter: daemon.warning
+  #   options:
+  #     protocol: udp
+  #     target: rsyslog.infra.ginhoux.net
+  #     port: 514
 
 
-rsyslog_filters_files:
-  - name: 00_iptables
-    description: "manage iptables logs"
-    filters_list:
-      - description: "only iptables drop msg, all in file and only severity 4 forwarded"
-        condition: >-
-                  $syslogfacility-text == 'kern'
-                  and
-                  $msg contains 'iptables'
-                  and
-                  $msg contains 'drop'
-        # type: action
-        type: ruleset
-        # type: call
-        # type: stop
-        # call: toto
-        ruleset_definition:
-          name: iptables_drop
-          description: "ruleset for handle iptables logs"
-          rules:
-            - description: ""
-              condition: ""
-              stop_after: false
-              type: action
-              # type: stop
-              # type: call
-              # call: 
-              actions_list:
-                - description: ""
-                  stop_after: false
-                  module: omfile
-                  options: 
-                    File: /var/log/iptables_drop
-                # - module: omfile
-                #   options: 
-                #     File: /var/log/iptables_drop2
-                #   stop_after: false
-            - description: ""
-              condition: ""
-              stop_after: false
-              # type: action
-              # type: call
-              type: stop
-              # module: 
-              # options: []
-            - description: ""
-              condition: >-
-                         $syslogseverity-text == 'warn'
-              stop_after: false
-              type: action
-              # type: stop
-              # type: call
-              # call: 
-              actions_list:
-                - description: ""
-                  stop_after: false
-                  module: omfwd
-                  options:
-                    protocol: udp
-                    target: rsyslog1.infra.ginhoux.net
-                    port: 514
-                - description: ""
-                  module: omfwd
-                  stop_after: false
-                  options:
-                    protocol: udp
-                    target: rsyslog2.infra.ginhoux.net
-                    port: 514
-        actions_list:
-          - description: ""
-            stop_after: false
-            module: omfile
-            options:
-              file: /tmp/aaa
-          - description: ""
-            stop_after: false
-            module: omfwd
-            options:
-              protocol: udp
-              target: rsyslog44.infra.ginhoux.net
-              port: 9999
-        templates_list:
-          - name: tpl_list2
-            description: "template type list example"
-            type: list
-            options: []
-            list:
-              - constant: 
-                  value: "Syslog MSG is: '"
-              - property:
-                  name: "msg"
-              - constant: 
-                  value: "', "
-              - property:
-                  name: "timereported"
-                  dateFormat: "rfc3339"
-                  caseConversion: "lower"
-          - name: tpl_subtree2
-            description: "template type subtree example"
-            type: subtree
-            options: []
-            subtree: "$!usr!tpl2"
-          - name: tpl_string2
-            description: "template type string example"
-            type: string
-            options: []
-            string: "teststring"
-          # - name: tpl_plugin2
-          #   description: "template type plugin example (disabled to avoid errors)"
-          #   type: plugin
-          #   options: []
-          #   plugin: "testplugin"
+rsyslog_custom_configure: true
+rsyslog_custom_list:
+  - name: iptables
+    # definition: >
+    #             if ($msg contains 'iptables') then { 
+    #               action(
+    #                      type="omfile"
+    #                      File="/var/log/iptables"
+    #                      )
+    #             }
+  - name: forward_rsyslog_infra_ginhoux_net
+    rule:
+      - filter: kern.warning
+        mode: action
+        type: omfwd
+        options:
+          protocol: udp
+          target: rsyslog.infra.ginhoux.net
+          port: 51
+        pre_line: ""
+        post_line: ""
+      - filter: daemon.warning
+        mode: action
+        type: omfwd
+        options:
+          protocol: udp
+          target: rsyslog.infra.ginhoux.net
+          port: 514
+        pre_line: ""
+        post_line: ""
+  # - name: toto
+  #   module:
+  #     - name: gggg
+  #       # conf:
+  #       #   load: free
+  #       #   header: oui
+  #       #   footer: non
+  #     - name: hhhhh
+  #       conf:
+  #         load: rrr
+  #         free: oui
+  #         sfr: non
+  #   rule:
+  #     - filter: "*.debug"
+  #       mode: action     
+  #       type: gggg
+  #       # options:
+  #       #   File: /var/log/messages
+  #     - filter: "*.warn"
+  #       mode: input     
+  #       type: rrr
+  #       options:
+  #         File: /var/log/warn
+  #         FileCreate: "yes"
