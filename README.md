@@ -15,7 +15,7 @@ This role is built to only run on platforms defined in `meta/main.yml`
 Role Variables
 --------------
 
-Everything is in defaults/main.yml
+Necessary variables are defined on `defaults/main.yml`
 
 
 Dependencies
