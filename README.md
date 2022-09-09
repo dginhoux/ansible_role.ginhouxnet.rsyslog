@@ -1,4 +1,4 @@
-ginhouxnet.rsyslog
+Ansible Role : dginhoux.rsyslog
 =========
 
 This ansible role configure rsyslog and only use new syntax !
