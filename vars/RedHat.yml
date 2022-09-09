@@ -1,5 +1,4 @@
 ---
-
 rsyslog_default_rules_list:
   # log all kernel messages to the console.
   # - rule: "kern.*"

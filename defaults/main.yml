@@ -6,20 +6,17 @@ rsyslog_services:
   - rsyslog
 rsyslog_enable: true
 
-
 rsyslog_work_dir: /var/spool/rsyslog
 rsyslog_main_conf_file: /etc/rsyslog.conf
 rsyslog_custom_conf_dir: /etc/rsyslog.d
 rsyslog_include_conf_files_dir: /etc/rsyslog.d/*.conf
 
-
-rsyslog_global_conf: 
+rsyslog_global_conf:
   umask: "0022"
   workDirectory: "{{ rsyslog_work_dir }}"
   net.enableDNS: "on"
   preserveFQDN: "on"
   processInternalMessages: "off"
-
 
 rsyslog_modules_list:
   - imuxsock
@@ -33,38 +30,30 @@ rsyslog_modules_list:
   - omfwd
   - omusrmsg
 
-
 rsyslog_module_imuxsock_conf:
   SysSock.Use: "on"
 rsyslog_module_imuxsock_input: []
-
 
 rsyslog_module_imjournal_conf:
   StateFile: imjournal.state
   IgnoreNonValidStatefile: "on"
 
-
 rsyslog_module_imklog_conf: []
 
-
 rsyslog_module_immark_conf: []
-
 
 rsyslog_module_imudp_conf: []
 rsyslog_module_imudp_input:
   - port: 514
 
-
 rsyslog_module_imtcp_conf: []
 rsyslog_module_imtcp_input:
   - port: 514
 
-
 rsyslog_module_imfile_conf: []
 rsyslog_module_imfile_input: []
 
-
-rsyslog_module_omfile_conf: 
+rsyslog_module_omfile_conf:
   Template: RSYSLOG_TraditionalFileFormat
   fileOwner: root
   fileGroup: adm
@@ -114,17 +103,16 @@ rsyslog_module_omfile_action:
     pre_line: "if ($msg contains 'iptables') then {"
     post_line: "}"
 
-
 rsyslog_module_omusrmsg_conf: []
 rsyslog_module_omusrmsg_action:
   - filter: "*.emerg"
     options:
       users: "*"
 
-
-rsyslog_module_omfwd_conf: 
+rsyslog_module_omfwd_conf:
   Template: RSYSLOG_TraditionalFileFormat
-rsyslog_module_omfwd_action: []
+rsyslog_module_omfwd_action:
+  []
   # - filter: kern.warning
   #   options:
   #     protocol: udp
@@ -136,17 +124,16 @@ rsyslog_module_omfwd_action: []
   #     target: rsyslog.infra.ginhoux.net
   #     port: 514
 
-
 rsyslog_custom_configure: true
 rsyslog_custom_list:
   - name: iptables
-    # definition: >
-    #             if ($msg contains 'iptables') then { 
-    #               action(
-    #                      type="omfile"
-    #                      File="/var/log/iptables"
-    #                      )
-    #             }
+  # definition: >
+  #             if ($msg contains 'iptables') then {
+  #               action(
+  #                      type="omfile"
+  #                      File="/var/log/iptables"
+  #                      )
+  #             }
   - name: forward_rsyslog_infra_ginhoux_net
     rule:
       - filter: kern.warning
@@ -181,12 +168,12 @@ rsyslog_custom_list:
   #         sfr: non
   #   rule:
   #     - filter: "*.debug"
-  #       mode: action     
+  #       mode: action
   #       type: gggg
   #       # options:
   #       #   File: /var/log/messages
   #     - filter: "*.warn"
-  #       mode: input     
+  #       mode: input
   #       type: rrr
   #       options:
   #         File: /var/log/warn

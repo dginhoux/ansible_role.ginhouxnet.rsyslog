@@ -3,8 +3,8 @@
   systemd:
     name: "{{ item }}"
     state: restarted
-    enabled: yes
-    daemon_reload: yes
+    enabled: true
+    daemon_reload: true
   loop: "{{ rsyslog_services | flatten }}"
   when: rsyslog_enable is true
   listen: restart_rsyslog

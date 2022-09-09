@@ -1,5 +1,4 @@
 ---
-
 rsyslog_default_rules_list:
   # standard logs
   - rule: "auth,authpriv.*"

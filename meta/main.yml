@@ -1,5 +1,4 @@
 ---
-
 galaxy_info:
   role_name: rsyslog
   description: configure rsyslog
@@ -24,6 +23,5 @@ galaxy_info:
         - "8"
   galaxy_tags:
     - rsyslog
-
 
 dependencies: []
