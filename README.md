@@ -9,7 +9,8 @@ WARNING : It doesn't check rsyslog version, so if you're using and older version
 Requirements
 ------------
 
-This role is built to only run on platforms defined in `meta/main.yml`
+This role require a supported platform defined in `meta/main.yml`.
+It will skip node with unsupported platform ; this behaviour can be bypassed by settings this variable `asserts_bypass=True`.
 
 
 Role Variables
