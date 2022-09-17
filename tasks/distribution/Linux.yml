@@ -1,12 +1,12 @@
 ---
 - name: install and configure rsyslog packages
-  package:
+  ansible.builtin.package:
     name: "{{ item }}"
     state: present
   loop: "{{ rsyslog_packages | flatten }}"
 
 # - name: fix logs dirs permissions
-#   file:
+#   ansible.builtin.file:
 #     path: "{{ item }}"
 #     owner: "{{ rsyslog_fix_permissions_logs_dir_user }}"
 #     group: "{{ rsyslog_fix_permissions_logs_dir_group }}"
@@ -14,12 +14,12 @@
 #   loop: "{{ rsyslog_fix_permissions_logs_dirs | flatten }}"
 
 - name: remove rsyslog configuration dir
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ rsyslog_custom_conf_dir }}"
 
 - name: create rsyslog configuration dir
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ rsyslog_custom_conf_dir }}"
     mode: 755
@@ -27,7 +27,7 @@
     group: root
 
 - name: create rsyslog work dir
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ rsyslog_work_dir }}"
     mode: 700
@@ -35,7 +35,7 @@
     group: root
 
 - name: generate custom configuration files
-  template:
+  ansible.builtin.template:
     src: custom.conf.j2
     dest: "{{ rsyslog_custom_conf_dir }}/{{ item.name }}.conf"
     # validate: "{{ 'rsyslogd -N1 -f %s' if item.value.validate | default(true) else 'true %s' }}"
@@ -47,7 +47,7 @@
   # notify: restart_rsyslog
 
 - name: generate global configuration file
-  template:
+  ansible.builtin.template:
     src: rsyslog.conf.j2
     dest: "{{ rsyslog_main_conf_file }}"
     # validate: "rsyslogd -N1 -f {{ rsyslog_main_conf_file }}"
@@ -57,12 +57,12 @@
   # notify: restart_rsyslog
 
 - name: validate configuration
-  shell:
+  ansible.builtin.shell:
     cmd: "rsyslogd -N1 -f {{ rsyslog_main_conf_file }}"
   notify: restart_rsyslog
 
 - name: disable and stop rsyslog services
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ item }}"
     state: stopped
     enabled: false
@@ -71,7 +71,7 @@
   when: rsyslog_enable is false
 
 - name: enable and start rsyslog services
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ item }}"
     state: started
     enabled: true

@@ -54,7 +54,7 @@ rsyslog_module_imfile_conf: []
 rsyslog_module_imfile_input: []
 
 rsyslog_module_omfile_conf:
-  Template: RSYSLOG_TraditionalFileFormat
+  ansible.builtin.template: RSYSLOG_TraditionalFileFormat
   fileOwner: root
   fileGroup: adm
   FileCreateMode: "0640"
@@ -110,7 +110,7 @@ rsyslog_module_omusrmsg_action:
       users: "*"
 
 rsyslog_module_omfwd_conf:
-  Template: RSYSLOG_TraditionalFileFormat
+  ansible.builtin.template: RSYSLOG_TraditionalFileFormat
 rsyslog_module_omfwd_action:
   []
   # - filter: kern.warning
