@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   role_name: rsyslog
-  description: configure rsyslog
+  description: dginhoux.rsyslog
   author: Dany GINHOUX
   company: dginhoux
   license: MIT
