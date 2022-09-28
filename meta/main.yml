@@ -1,7 +1,8 @@
 ---
 galaxy_info:
   role_name: rsyslog
-  description: dginhoux.rsyslog
+  description: |
+    This ansible role configure rsyslog.
   author: Dany GINHOUX
   company: dginhoux
   license: MIT
