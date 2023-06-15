@@ -57,7 +57,7 @@
   # notify: restart_rsyslog
 
 - name: validate configuration
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: "rsyslogd -N1 -f {{ rsyslog_main_conf_file }}"
   notify: restart_rsyslog
 
